@@ -3,12 +3,13 @@
 const express    = require('express');        
 const app        = express();                
 const bodyParser = require('body-parser');
+app.use(bodyParser.json({limit:'1gb'})); 
 const logger 	   = require('morgan');
 const router 	   = express.Router();
 const cors = require('cors')
+// app.use(express.bodyParser({limit: '50mb'}));
 
-
-const port 	   = process.env.PORT || 3006;
+const port 	   = process.env.PORT || 3007;
 
 app.use(bodyParser.json());
 app.use(logger('dev'));

@@ -2,13 +2,17 @@
 
 'use strict';
 
-
+let ipfs = require('ipfs-api')({host: "localhost", port: 5001, protocol: "http"});
 var fs = require('fs');
 var cors = require('cors');
+var multer  = require('multer')
+var upload = multer({ dest: '/tmp/'});
 const nem = require("nem-sdk").default;
 const register = require('./functions/register');
 const contractJs = require('./functions/contract'); 
 var users=require("./models/account")
+var UploadFunction=require("./functions/upload")
+var uploads=require("./models/uploaded")
 //==============================================mock services========================================//
 module.exports = router => {
 router.post('/mock',cors(),function(req,res){
@@ -17,7 +21,65 @@ router.post('/mock',cors(),function(req,res){
 
 }
 )
+//=============================All ipfs hosted file=========================
+router.get('GetIPFSDocuments',cors(),function(req,res){
+    var file = require()
 
+
+
+
+
+})
+
+
+
+///=============================storing in ipfs===============================================
+var response;
+
+router.post('/file_upload', upload.single("file"), function (req, res) {
+   var file = __dirname +"/images"+ "/" + req.file.originalname;
+   console.log("file------>>",file)
+   fs.readFile( req.file.path, function (err, data) {
+        console.log(" req.file.path", req.file.path)
+        var cont= req.file.path
+        ipfs.util.addFromFs(cont, function (err, fileHash) {
+        console.log("files================>",fileHash)
+        console.log(err)
+  
+        UploadFunction.UploadDocuments(fileHash,"user")
+        .then(result=>{
+          res.send({
+              status:201 
+        })
+    
+    });
+  
+    })
+
+
+       
+            //    response = {
+            //        message: 'File uploaded successfully',
+            //        filename: req.file.originalname
+            //   };
+        res.send( JSON.stringify( response ) );
+          })
+         
+   });
+
+
+
+
+
+
+
+//==================================================================================//
+router.post('/render',function(req,resp){
+   var file=req.body.fileData
+   resp.send({
+       "file":file
+   })
+    });
 //=================================registerUser===================================================================//
 router.get('/', (req, res) => res.end('Welcome to para-ins!'));
 router.post('/login', cors(),function(req,res)
