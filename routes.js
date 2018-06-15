@@ -1,7 +1,7 @@
 
 
 'use strict';
-
+var login=require("./functions/loginUser")
 let ipfs = require('ipfs-api')({host: "localhost", port: 5001, protocol: "http"});
 var fs = require('fs');
 var cors = require('cors');
@@ -13,6 +13,7 @@ const contractJs = require('./functions/contract');
 var users=require("./models/account")
 var UploadFunction=require("./functions/upload")
 var uploads=require("./models/uploaded")
+const jwt = require('jsonwebtoken');
 //==============================================mock services========================================//
 module.exports = router => {
 router.post('/mock',cors(),function(req,res){
@@ -49,7 +50,10 @@ router.post('/file_upload', upload.single("file"), function (req, res) {
         UploadFunction.UploadDocuments(fileHash,"user")
         .then(result=>{
           res.send({
-              status:201 
+              status:201 ,
+              path:file,
+              result:result.Documents
+
         })
     
     });
@@ -62,7 +66,7 @@ router.post('/file_upload', upload.single("file"), function (req, res) {
             //        message: 'File uploaded successfully',
             //        filename: req.file.originalname
             //   };
-        res.send( JSON.stringify( response ) );
+        // res.send( JSON.stringify( response ) );
           })
          
    });
@@ -82,17 +86,44 @@ router.post('/render',function(req,resp){
     });
 //=================================registerUser===================================================================//
 router.get('/', (req, res) => res.end('Welcome to para-ins!'));
+
 router.post('/login', cors(),function(req,res)
 {
-    const UserName = req.body.FirstName;
+    const UserName = req.body.walletName;
     const password = req.body.password;
-    users.find({"name":UserName}).then(results=>{
-        console.log(results)
-    })
-    // find( { qty: { $gt: 25 } } )
+  
+    login
+            .login(UserName, password)
+            .then(result => {   
+                console.log("result ===>>>",result)
+
+                const token = jwt.sign(result,"Rpqb@123", {
+                    expiresIn: 60000000000
+                })
+
+
+                res.status(result.status).json({
+                    "message": "Login Successful",
+                    "status": true,
+                     token:token,
+                    "usertype":result.users.usertype,
+                   
+                });
+    
+              
+
+            })
+            .catch(err => res.status(err.status).json({
+                message: err.message
+            }).json({
+                status: err.status
+            }));
+
+    
 
 
 })
+
     
 router.post('/registerUser', cors(),function(req,res)
 {
