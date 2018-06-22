@@ -10,14 +10,15 @@ exports.login=(UserName,password)=>
 
     user.find({ $and: [{ "walletName": UserName}, {"password":password}] })
         .then(function(users){
-            if (users) {
+            console.log("resopdksepksd===========>",users)
+            if (users.length!=0){
               
                 resolve({
                     status: 200,
                     users: users[0]
                 });
 
-            } else {
+            } else if(users.length==0) {
 
                 reject({
                     status: 401,

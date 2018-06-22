@@ -13,6 +13,7 @@ const contractJs = require('./functions/contract');
 var users=require("./models/account")
 var UploadFunction=require("./functions/upload")
 var uploads=require("./models/uploaded")
+var IndividualRecordSearchBlockchain= require('./functions/IndividualRecordSearchBlockchain')
 const jwt = require('jsonwebtoken');
 //==============================================mock services========================================//
 module.exports = router => {
@@ -23,8 +24,17 @@ router.post('/mock',cors(),function(req,res){
 }
 )
 //=============================All ipfs hosted file=========================
-router.get('GetIPFSDocuments',cors(),function(req,res){
-    var file = require()
+router.post('/Get',(req,res)=>{
+    // var DocumentCategory=req.body.DocumentType;
+    IndividualRecordSearchBlockchain.history().then(result=>{
+        console.log("Individual of result",result);
+        res.status(result.status).json({
+            history:result.message 
+        });
+
+    })
+
+    
 
 
 
@@ -36,21 +46,27 @@ router.get('GetIPFSDocuments',cors(),function(req,res){
 
 ///=============================storing in ipfs===============================================
 var response;
-
+var usertype;
 router.post('/file_upload', upload.single("file"), function (req, res) {
-   var file = __dirname +"/images"+ "/" + req.file.originalname;
-   console.log("file------>>",file)
-   fs.readFile( req.file.path, function (err, data) {
-        console.log(" req.file.path", req.file.path)
+   var documentType=req.body.DocumentType;
+   var name=req.body.name;
+//    var usertype=req.body.usertype;
+
+    console.log("Type of document",documentType)
+    console.log("body=================>",req.body);
+    var file = __dirname +"/images"+ "/" + req.file.originalname;
+    console.log("file------>>",file)
+    fs.readFile( req.file.path, function (err, data) {
+        console.log(" req.file.path=====>>>", req.file.path)
         var cont= req.file.path
         ipfs.util.addFromFs(cont, function (err, fileHash) {
         console.log("files================>",fileHash)
         console.log(err)
   
-        UploadFunction.UploadDocuments(fileHash,"user")
+        UploadFunction.UploadDocuments(fileHash,documentType,name,"Admin")
         .then(result=>{
           res.send({
-              status:201 ,
+              status:201,
               path:file,
               result:result.Documents
 
@@ -59,14 +75,6 @@ router.post('/file_upload', upload.single("file"), function (req, res) {
     });
   
     })
-
-
-       
-            //    response = {
-            //        message: 'File uploaded successfully',
-            //        filename: req.file.originalname
-            //   };
-        // res.send( JSON.stringify( response ) );
           })
          
    });

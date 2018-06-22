@@ -6,6 +6,8 @@ const Schema = mongoose.Schema;
 
 const UploadDocumentSchema = mongoose.Schema({
     filesHash:Object,
+    DocumentType:String,
+    name:String,
     usertype:String,       
     created_at: String    
 });
