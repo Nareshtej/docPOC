@@ -15,7 +15,7 @@ exports.registerUser = (nem_id,privateKey,walletName,password,usertype) =>
            walletName:walletName,
            password:password,
            usertype:usertype,
-           created_at: new Date(),
+           created_at: new Date(),              
            });
         console.log("newUser========>>>>>",newUser)
         newUser.save()

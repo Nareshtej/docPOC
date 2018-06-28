@@ -2,33 +2,40 @@
 const nem = require("nem-sdk").default;
 const uploads=require("../models/uploaded")
 const crypto= require("crypto");
-var AddressProvider1="MCDJYXQWCRFJUBUZK5QGIWUFSB3GLZW4VKAC72QM"
-var AddressProvider2="MADHELDXSCFEX6GNQUK5OQMCAVQI37KPPCMHX4WE"
+var AddressProvider1="MBIOMNZP3PREFD3HAJGYEIVQ6GNZ4GRQP53CERHP"
+var AddressProvider2="MDG2VZA2FBYDTRFN3I3BWRVDMDMIYJ4CIW3MOTMS"
 
-
-exports.UploadDocuments = (filesHash,documentType,name,usertype) =>
-
+var filesHash;
+var DocumentType;
+var name;
+var seatNo;
+var usertype;
+var created_at;
+exports.UploadDocuments = (filesHash,documentType,name,seatNo,usertype) =>
+console.log("seatNo: seatNo",seatNo)
     new Promise(async(resolve, reject) => {
         const Documents = new uploads({
-           filesHash:filesHash,
-           DocumentType:documentType,
+           filesHash :filesHash,
+           documentType:DocumentType,
            name:name,
+           seatNo: seatNo,
            usertype:usertype,
-           created_at: new Date(),
+           created_at: new Date()
            });
         console.log("Document========>>>>>",Documents)
         
         var endpoint =nem.model.objects.create("endpoint")("http://b1.nem.foundation", "7895");    
         // Create a common object holding key
         var common = nem.model.objects.create("common")("123","df80a6ccf1f539be59b5621605399b559e2dcde5eaef01272f9277775b4deeeb");
-       
+       console.log("print", filesHash);
         // Create an un-prepared transfer transaction object
         var Transfer={
         "ContentHash":filesHash[0].hash,
         "Document":documentType,
         "name":name,
-         created_at: new Date(),
-        // "rapidID":rapidID
+        "seatNo": seatNo,
+         "created_at": new Date(),
+
         }
         var TransferObject=JSON.stringify(Transfer)
         var transferTransaction = nem.model.objects.create("transferTransaction")(AddressProvider2, 0,TransferObject );
@@ -44,7 +51,9 @@ exports.UploadDocuments = (filesHash,documentType,name,usertype) =>
                 usertype:usertype,
                 message: "saved hash success",
                 Documents:Documents,
-                name:name
+                name:name,
+                seatNo: seatNo
+
               
             }))
 

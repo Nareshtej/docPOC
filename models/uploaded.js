@@ -8,8 +8,10 @@ const UploadDocumentSchema = mongoose.Schema({
     filesHash:Object,
     DocumentType:String,
     name:String,
+    seatNo: String,
     usertype:String,       
-    created_at: String    
+    created_at: String,  
+    modified_at: String 
 });
 
 

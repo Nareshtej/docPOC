@@ -1,20 +1,23 @@
 
 
 'use strict';
+var verificationDoc=require("./functions/verify");
 var login=require("./functions/loginUser")
 let ipfs = require('ipfs-api')({host: "localhost", port: 5001, protocol: "http"});
 var fs = require('fs');
 var cors = require('cors');
 var multer  = require('multer')
-var upload = multer({ dest: '/tmp/'});
+var tmpupload = multer({ dest: '/tmp/'});
 const nem = require("nem-sdk").default;
 const register = require('./functions/register');
 const contractJs = require('./functions/contract'); 
 var users=require("./models/account")
 var UploadFunction=require("./functions/upload")
+var version = require("./functions/version")
 var uploads=require("./models/uploaded")
 var IndividualRecordSearchBlockchain= require('./functions/IndividualRecordSearchBlockchain')
 const jwt = require('jsonwebtoken');
+const userDetails = require('./functions/getLinkofDoc');
 //==============================================mock services========================================//
 module.exports = router => {
 router.post('/mock',cors(),function(req,res){
@@ -42,28 +45,50 @@ router.post('/Get',(req,res)=>{
 
 })
 
+//==============version history=========
+// router.post('/versionHistory', upload.single("file"), function (req, res) {
+//     var documentType = req.body.DocumentType;
+//     var name = req.body.name;
 
+//    console.log("Type of document", documentType);
+//    console.log("body of request", req.body);
+   
+//    var file = _dirname +"/images"+ "/" + req.file.originalname
+//    console.log("file details:   ", file);
+  
+//    fs.readFile ( req.file.path, function(err, data){
+//        console.log("requested file path: ", req.file.path)
+  
+//        var path = req.file.path;
+//        ipfs.util.addFromFs(path, function(err, fileHash){
+//            console.log("hash of the file", fileHash);
+//            console.log(err);
+//        })
+//    })
+// })
 
 ///=============================storing in ipfs===============================================
 var response;
-var usertype;
-router.post('/file_upload', upload.single("file"), function (req, res) {
-   var documentType=req.body.DocumentType;
-   var name=req.body.name;
-//    var usertype=req.body.usertype;
+router.post('/file_upload', tmpupload.single("file"), function (req, res) {
 
-    console.log("Type of document",documentType)
-    console.log("body=================>",req.body);
     var file = __dirname +"/images"+ "/" + req.file.originalname;
     console.log("file------>>",file)
+    console.log(req.body)
+    var documentType=req.body.DocumentType;
+    console.log("Type of document",documentType)
+    var name=req.body.name;
+    var seatNo= req.body.seatNo;
+    var usertype=req.body.usertype;
+    console.log("body=================>",req.body);
     fs.readFile( req.file.path, function (err, data) {
         console.log(" req.file.path=====>>>", req.file.path)
         var cont= req.file.path
+       
         ipfs.util.addFromFs(cont, function (err, fileHash) {
         console.log("files================>",fileHash)
-        console.log(err)
+        console.log("error",err)
   
-        UploadFunction.UploadDocuments(fileHash,documentType,name,"Admin")
+        UploadFunction.UploadDocuments(fileHash,documentType,name,seatNo,"Admin")
         .then(result=>{
           res.send({
               status:201,
@@ -206,7 +231,40 @@ console.log("walletAccount===========>>",walletAccount)
                     }))
                 });
 
-            }               
+//============get user data including hash========                
+      router.post('/getUserDetails', cors(), (req, res) => {
+        var user = req.body.name
+        console.log("user name", user)
+        //var fileHash = req.body.fileHash; Here you are passing values from user 
+        //console.log("file hash".fileHash) that values are storing in bodyparser
+        userDetails.documentDetails(user)
+        .then(result =>{
+            res.status(result.status).json({
+                message: result
+            });
+        })
+        .catch(err => res.status(err.status).json({
+            message: err.message
+        }))
+      });
+ //=========== verifying document with the blockchain hash=========   
+       router.post('/verifyDocument', cors(), (req, res) => {
+         var Comparehash = req.body.hash;
+         console.log("hash of document", Comparehash)
+         verificationDoc.verifydoc(Comparehash)
+         .then(result => {
+             res.send({
+                 message: "Hash verified successfullly"
+             });
+         })
+         .catch(err => {
+             res.status(err.status).json({
+                 message: err.message
+             })
+            });
+       })
+//======================       
+            }             
                    
 
     
